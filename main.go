@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	_ "github.com/apex/log"
+
 )
 
 
@@ -22,6 +24,8 @@ func main() {
 	postfixString := ToPostfix(inputExpression)
 	result := SolvePostfix(postfixString)
 	fmt.Println("calculating")
+	fmt.Println("Press ctrl+C to see result")
+
 	signal.Notify(ch, os.Interrupt)
 	<-ch
 	fmt.Println("calculating")

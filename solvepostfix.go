@@ -21,15 +21,18 @@ func SolvePostfix(postfixString string) float64 {
 			} else {
 				b = b + string(element)
 			}
-			for i := index + 1; postfixString[i] != ' '; i++ {
+			i:=0
+			for i = index + 1; postfixString[i] != ' '; i++ {
 				if IsOperand(postfixString[i]) {
 					if aEmpty {
 						a = a + string(postfixString[i])
 					} else {
 						b = b + string(postfixString[i])
 					}
+				} }
+				if postfixString[index+1]!=' ' {
+					index = i
 				}
-				index = i
 				var err error
 				if aEmpty {
 					x, err := strconv.Atoi(a)
@@ -53,7 +56,7 @@ func SolvePostfix(postfixString string) float64 {
 					os.Exit(2)
 				}
 
-			}
+
 
 		} else if IsOperator(postfixString[index]) && postfixString[index] != ' ' {
 			aNum = SolveAB(float64(aNum), float64(bNum), string(postfixString[index]))
