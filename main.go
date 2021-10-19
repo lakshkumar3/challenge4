@@ -12,11 +12,6 @@ import (
 func main() {
 	ch := make(chan os.Signal, 1)
 	fmt.Print("Enter  expression: ")
-	/*	infixString, err := ReadFromInput()
-		if err != nil {
-			fmt.Println("Error when scanning input:", err.Error())
-			return
-		}*/
 	var inputExpression string
 	fmt.Scanln(&inputExpression)
 
