@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"github.com/apex/log"
+	"strings"
+)
 
 func IsOperator(c uint8) bool {
 	return strings.ContainsAny(string(c), "+ & - & * & /")
@@ -27,8 +30,8 @@ func HasHigherPrecedence(op1 string, op2 string) bool {
 }
 
 func ToPostfix(s string) string {
+	log.Info(" ToPostfix called")
 	var stack Stack
-
 	postfix := ""
 
 	length := len(s)
@@ -82,6 +85,7 @@ func ToPostfix(s string) string {
 		str, _ := stack.Pop()
 		postfix += " " + str
 	}
+	log.Info(" ToPostfix completed")
 
 	return strings.TrimSpace(postfix)
 }
