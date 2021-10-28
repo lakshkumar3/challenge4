@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/reiver/go-telnet"
+	"github.com/apex/log"
+	"github.com/cakemarketing/go-common/v5/settings"
 	"net"
 	"os"
 	"regexp"
@@ -14,18 +15,18 @@ import (
 var host = flag.String("host", "localhost", "The hostname or IP to connect to; defaults to \"localhost\".")
 var port = flag.Int("port", 8000, "The port to connect to; defaults to 8000.")
 
-func Clientmain() {
+func Client() {
 	flag.Parse()
 
-	dest := *host + ":" + strconv.Itoa(*port)
-	fmt.Printf("Connecting to %s...\n", dest)
+	dest := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
 
-	conn, err := telnet.DialTo(dest)
+	conn, err := net.Dial(settings.GetString("CONNECTION_TYPE"), dest)
 	if err != nil {
 		if _, t := err.(*net.OpError); t {
 			fmt.Println("Some problem connecting.")
+			log.Fatal("Some problem connecting.")
 		} else {
-			fmt.Println("Unknown error: " + err.Error())
+			log.Fatal("Unknown error: " + err.Error())
 		}
 		os.Exit(1)
 	}
@@ -39,12 +40,12 @@ func Clientmain() {
 		//conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
 		_, err := conn.Write([]byte(text))
 		if err != nil {
-			fmt.Println("Error writing to stream.")
+			log.Error("Error writing to stream.")
 			break
 		}
 	}
 }
-func readConnection(conn *telnet.Conn) {
+func readConnection(conn net.Conn) {
 	for {
 		scanner := bufio.NewScanner(conn)
 
@@ -72,7 +73,7 @@ func handleCommands(text string) bool {
 
 			switch {
 			case text == "%quit%":
-				fmt.Println("\b\bServer is leaving. Hanging up.")
+				log.Info("\b\bServer is leaving. Hanging up.")
 				os.Exit(0)
 			}
 			return true

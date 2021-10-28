@@ -30,8 +30,10 @@ func main() {
 	if err := settings.ReadInConfig(); err != nil {
 		fmt.Printf("Could not parse configuration file '%s/%s': %v", flagConfigPath, flagEnvironment, err)
 		log.Fatal("Could not parse configuration file  " + flagConfigPath + "/" + flagEnvironment + ":" + err.Error())
-
 		return
 	}
-	server.Server()
+	err := server.Server()
+	if err != nil {
+		log.Error("server returing error " + err.Error())
+	}
 }

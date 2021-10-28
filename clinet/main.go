@@ -32,5 +32,5 @@ func main() {
 		log.Fatal("Could not parse configuration file  " + flagConfigPath + "/" + flagEnvironment + ":" + err.Error())
 		return
 	}
-
+	Client()
 }

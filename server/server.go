@@ -1,12 +1,3 @@
-/*
-A very simple TCP server written in Go.
-
-This is a toy project that I used to learn the fundamentals of writing
-Go code and doing some really basic network stuff.
-
-Maybe it will be fun for you to read. It's not meant to be
-particularly idiomatic, or well-written for that matter.
-*/
 package server
 
 import (
@@ -21,14 +12,18 @@ import (
 	"strconv"
 )
 
-func Server() {
+func Server() error {
 	var totalCount int = 0
 	log.Info("program exiting ")
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
 
 	src := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
-	listener, _ := net.Listen(settings.GetString("CONNECTION_TYPE"), src)
+	listener, err := net.Listen(settings.GetString("CONNECTION_TYPE"), src)
+	if err != nil {
+		log.Fatal("could not listen to server " + err.Error())
+		return err
+	}
 	fmt.Printf("Listening on %s.\n", src)
 
 	go func() {
@@ -48,6 +43,7 @@ func Server() {
 		conn.Write([]byte(serviceInfoMsg))
 		go handleConnection(conn, &totalCount)
 	}
+	return nil
 }
 
 func handleConnection(conn net.Conn, total_count *int) {
