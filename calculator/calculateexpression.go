@@ -18,8 +18,7 @@ func CalculateExpression(inputExpression string) (string, error) {
 	} else {
 		fmt.Printf(inputExpression + " = ")
 		fmt.Println(result)
-		strResult := fmt.Sprintf("  %.2f", result)
-		//strResult := strconv.FormatFloat(result,'E',-1,64)
+		strResult := fmt.Sprintf(" %.2f", result)
 		output := inputExpression + " =" + strResult
 		return output, nil
 	}

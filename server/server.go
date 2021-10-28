@@ -42,6 +42,7 @@ func Server() error {
 		serviceInfoMsg := "Welcome this service calculates the expression  it can only perform 4 operations  + - / *"
 		conn.Write([]byte(serviceInfoMsg))
 		go handleConnection(conn, &totalCount)
+		defer conn.Close()
 	}
 	return nil
 }
@@ -65,6 +66,7 @@ func handleConnection(conn net.Conn, total_count *int) {
 
 	}
 	*total_count = *total_count + client_count
+	log.Info(remoteAddr + " client calculate total " + strconv.Itoa(client_count) + "Expressions")
 	fmt.Println("Client at " + remoteAddr + " disconnected.")
 }
 
@@ -74,6 +76,7 @@ func handleMessage(message string, conn net.Conn, client_count *int) {
 	if len(message) > 0 {
 		switch {
 		case message == "/quit":
+			conn.Write([]byte(" Total Expression count " + strconv.Itoa(*client_count) + "by client" + "\n"))
 			fmt.Println("Quitting.")
 			conn.Write([]byte("I'm shutting down now.\n"))
 			fmt.Println("< " + "%quit%")
