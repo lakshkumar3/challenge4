@@ -1,42 +1,37 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"os/signal"
-	"github.com/apex/log"
+    "fmt"
+    "github.com/apex/log"
+    "github.com/cakemarketing/go-common/v5/settings"
+    "github.com/pborman/getopt"
 )
 
+// build specific variables
+var (
 
-func main() {
-	log.Info("main started ")
+    flagConfigPath  = "config"
+    flagEnvironment = "local"
+)
 
-	ch := make(chan os.Signal, 1)
-var count int =0
-	signal.Notify(ch, os.Interrupt)
-	go func() {
-		<-ch
-		fmt.Println("\n number of expression calculated",count)
-		log.Info("program exiting ")
-		os.Exit(1)
-	}()
-	for i := 0; ; i++ {
-	fmt.Print("Enter  expression: ")
-	var inputExpression string
-	fmt.Scanln(&inputExpression)
-	postfixString := ToPostfix(inputExpression)
-	result,err := SolvePostfix(postfixString)
-		if err != nil {
-			log.Error(err.Error())
-			fmt.Println("error occured  ",err.Error())
-		}else {
-			count++
-			fmt.Printf(inputExpression+" = ")
-			fmt.Println(result)
-		}
-	fmt.Println("Press ctrl+C to exit")
-
+func init() {
+    getopt.StringVarLong(&flagConfigPath, "config-directory", 'p', "path to the config file")
+    getopt.StringVarLong(&flagEnvironment, "environment", 'e', "environment of running instance")
+    getopt.Parse()
+    if len(getopt.Args()) > 0 {
+        flagEnvironment = getopt.Arg(0)
+    }
 }
 
+func main() {
+    // parse the environment file
+    settings.SetConfigName(flagEnvironment)
+    settings.AddConfigPath(flagConfigPath)
+    if err := settings.ReadInConfig(); err != nil {
+        fmt.Printf("Could not parse configuration file '%s/%s': %v", flagConfigPath, flagEnvironment, err)
+        log.Fatal("Could not parse configuration file  "+ flagConfigPath+"/"+ flagEnvironment+":"+ err.Error())
 
+        return
+    }
+    Server()
 }
