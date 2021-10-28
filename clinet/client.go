@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/cakemarketing/go-common/v5/settings"
@@ -12,11 +11,7 @@ import (
 	"strconv"
 )
 
-var host = flag.String("host", "localhost", "The hostname or IP to connect to; defaults to \"localhost\".")
-var port = flag.Int("port", 8000, "The port to connect to; defaults to 8000.")
-
 func Client() {
-	flag.Parse()
 
 	dest := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
 
@@ -37,7 +32,6 @@ func Client() {
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
 
-		//conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
 		_, err := conn.Write([]byte(text))
 		if err != nil {
 			log.Error("Error writing to stream.")
@@ -55,7 +49,7 @@ func readConnection(conn net.Conn) {
 
 			command := handleCommands(text)
 			if !command {
-				fmt.Printf(" %s\n> ", text)
+				fmt.Println(" %s\n> ", text)
 			}
 
 			if !ok {
