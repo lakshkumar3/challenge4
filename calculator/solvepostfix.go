@@ -1,4 +1,4 @@
-package main
+package calculator
 
 import (
 	"errors"
@@ -8,13 +8,13 @@ import (
 	"strconv"
 )
 
-func SolvePostfix(postfixString string) (float64,error) {
+func SolvePostfix(postfixString string) (float64, error) {
 	log.Info(" SolvePostfix called")
 	var stack FloatStack
 	a := ""
 	b := ""
 	var aNum float64
-	var bNum int=-1
+	var bNum int = -1
 	var aEmpty bool = true
 	for index := 0; index < len(postfixString); index++ {
 		element := postfixString[index]
@@ -25,7 +25,7 @@ func SolvePostfix(postfixString string) (float64,error) {
 			} else {
 				b = b + string(element)
 			}
-			i:=0
+			i := 0
 			for i = index + 1; postfixString[i] != ' '; i++ {
 				if IsOperand(postfixString[i]) {
 					if aEmpty {
@@ -33,52 +33,51 @@ func SolvePostfix(postfixString string) (float64,error) {
 					} else {
 						b = b + string(postfixString[i])
 					}
-				} }
-				if postfixString[index+1]!=' ' {
-					index = i
 				}
-				var err error
-				if aEmpty {
-					x, err := strconv.Atoi(a)
-					if err != nil {
-						// handle error
-						fmt.Println(err)
-						os.Exit(2)
-					}
-					aNum = float64(x)
-				stack.Push(aNum)
-				}
-				aEmpty = false
-
-				if len(b) > 0 {
-					bNum, err = strconv.Atoi(b)
-					stack.Push(float64(bNum))
-					b = ""
-				}
+			}
+			if postfixString[index+1] != ' ' {
+				index = i
+			}
+			var err error
+			if aEmpty {
+				x, err := strconv.Atoi(a)
 				if err != nil {
 					// handle error
 					fmt.Println(err)
 					os.Exit(2)
 				}
+				aNum = float64(x)
+				stack.Push(aNum)
+			}
+			aEmpty = false
 
-
+			if len(b) > 0 {
+				bNum, err = strconv.Atoi(b)
+				stack.Push(float64(bNum))
+				b = ""
+			}
+			if err != nil {
+				// handle error
+				fmt.Println(err)
+				os.Exit(2)
+			}
 
 		} else if IsOperator(postfixString[index]) && postfixString[index] != ' ' {
-			num2,ok:=stack.Pop()
-			if  !ok {
+			num2, ok := stack.Pop()
+			if !ok {
 				log.Error("invaild input Expression")
 				return float64(0), errors.New("invaild input Expression")
 			}
 
-			num1,ok:=stack.Pop()
-			if  !ok {
+			num1, ok := stack.Pop()
+			if !ok {
 				log.Error("invaild input Expression")
 				return float64(0), errors.New("invaild input Expression")
 			}
 
 			var err error
-			operator:=string(postfixString[index])
-			aNum,err = SolveAB(float64(num1), float64(num2), operator)
+			operator := string(postfixString[index])
+			aNum, err = SolveAB(float64(num1), float64(num2), operator)
 			if err != nil {
 				return float64(0), err
 			}
@@ -88,22 +87,22 @@ func SolvePostfix(postfixString string) (float64,error) {
 		}
 	}
 	log.Info("SolvePostfix ended")
-	return aNum,nil
+	return aNum, nil
 }
-func SolveAB(a float64, b float64, operator string) (float64,error) {
+func SolveAB(a float64, b float64, operator string) (float64, error) {
 	if operator == "+" {
-		return float64(a + b),nil
+		return float64(a + b), nil
 	} else if operator == "-" {
-		return float64(a - b),nil
+		return float64(a - b), nil
 	} else if operator == "*" {
-		return a * b,nil
+		return a * b, nil
 	} else if operator == "/" {
-		if b==0 {
+		if b == 0 {
 			log.Error("infinity any number can't be divided by zero (b=0)")
-			return 0,errors.New("infinity any number can't be divided by zero")
+			return 0, errors.New("infinity any number can't be divided by zero")
 		}
 		c := a / b
-		return float64(c) ,nil
+		return float64(c), nil
 	}
-	return 0,nil
+	return 0, nil
 }
