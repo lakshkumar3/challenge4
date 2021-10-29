@@ -15,7 +15,7 @@ func Client() {
 
 	dest := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
 
-	conn, err := net.Dial(settings.GetString("CONNECTION_TYPE"), dest)
+	conn, err := net.Dial("tcp", dest)
 	if err != nil {
 		if _, t := err.(*net.OpError); t {
 			fmt.Println("Some problem connecting.")

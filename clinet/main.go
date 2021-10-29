@@ -24,7 +24,7 @@ func init() {
 
 func main() {
 	// parse the environment file
-	log.Info("server main started")
+	log.Debug("server main started")
 	settings.SetConfigName(flagEnvironment)
 	settings.AddConfigPath(flagConfigPath)
 	if err := settings.ReadInConfig(); err != nil {

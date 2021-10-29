@@ -12,14 +12,14 @@ import (
 	"strconv"
 )
 
-func Server() error {
+func server() error {
 	var totalCount int = 0
 	log.Info("program exiting ")
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
 
 	src := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
-	listener, err := net.Listen(settings.GetString("CONNECTION_TYPE"), src)
+	listener, err := net.Listen("tcp", src)
 	if err != nil {
 		log.Fatal("could not listen to server " + err.Error())
 		return err
@@ -97,4 +97,9 @@ func handleMessage(message string, conn net.Conn, client_count *int) {
 			}
 		}
 	}
+}
+func Start() error {
+	err := server()
+	return err
+
 }
