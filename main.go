@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/apex/log"
 	"github.com/cakemarketing/go-common/v5/settings"
+	"github.com/cakemarketing/snowbank/stores/redis"
+	"github.com/cakemarketing/snowbank/warehouse"
 	"github.com/pborman/getopt"
 )
 
@@ -32,8 +34,15 @@ func main() {
 		log.Fatal("Could not parse configuration file  " + flagConfigPath + "/" + flagEnvironment + ":" + err.Error())
 		return
 	}
-	err := server.Start()
+	opts := &redis.Options{
+		Addr:     settings.GetString("REDIS_PORT"),
+		Password: "",
+		DB:       0,
+	}
+	warehouse.AddConnection("redis", redis.ConnectRedis(opts))
+	err := server.StartServer()
 	if err != nil {
 		log.Error("server returing error " + err.Error())
 	}
+
 }

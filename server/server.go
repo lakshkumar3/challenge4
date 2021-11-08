@@ -3,6 +3,8 @@ package server
 import (
 	"bufio"
 	"challenge1/calculator"
+	"challenge1/entity"
+	"challenge1/service"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/cakemarketing/go-common/v5/settings"
@@ -10,16 +12,18 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 )
 
-func server() error {
+func StartServer() error {
 	var totalCount int = 0
-	log.Info("program exiting ")
+	log.Info("program starting ")
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
 
 	src := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
 	listener, err := net.Listen("tcp", src)
+	defer listener.Close()
 	if err != nil {
 		log.Fatal("could not listen to server " + err.Error())
 		return err
@@ -39,38 +43,46 @@ func server() error {
 		if err != nil {
 			fmt.Printf("Some connection error: %s\n", err)
 		}
-		serviceInfoMsg := "Welcome this service calculates the expression  it can only perform 4 operations  + - / *"
-		conn.Write([]byte(serviceInfoMsg))
-		go handleConnection(conn, &totalCount)
+		serviceInfoMsg := " \nthis service calculates the expression  it can only perform 4 operations  + - / *"
 		defer conn.Close()
+		conn.Write([]byte("enter your name \n"))
+		var name string
+		fmt.Fscanln(conn, &name)
+		conn.Write([]byte("Welcome " + name + serviceInfoMsg + "\n"))
+		go handleConnection(conn, &totalCount, name)
 	}
 	return nil
 }
 
-func handleConnection(conn net.Conn, total_count *int) {
+func handleConnection(conn net.Conn, total_count *int, name string) {
 	var client_count int = 0
 	remoteAddr := conn.RemoteAddr().String()
-	fmt.Println("Client connected from " + remoteAddr)
 	log.Info("Client connected from " + remoteAddr)
 	scanner := bufio.NewScanner(conn)
-
+	var equation entity.Equation
+	conn.Write([]byte("\nEnter Expression or type /quit to Exit : \n"))
 	for {
-		conn.Write([]byte("\nEnter Expresstion or type /quit to Exit : "))
 		ok := scanner.Scan()
 
 		if !ok {
 			break
 		}
-
-		handleMessage(scanner.Text(), conn, &client_count)
-
+		handleMessage(scanner.Text(), conn, &client_count, &equation)
 	}
 	*total_count = *total_count + client_count
-	log.Info(remoteAddr + " client calculate total " + strconv.Itoa(client_count) + "Expressions")
-	fmt.Println("Client at " + remoteAddr + " disconnected.")
+	log.Info(remoteAddr + " " + name + " client calculate total " + strconv.Itoa(client_count) + " Expressions")
+	fmt.Println("Client  " + name + " disconnected.")
+	var user entity.User
+	user.SetName(name)
+	err := service.User(user, equation)
+	if err != nil {
+		log.Error("error at service" + err.Error())
+		return
+	}
+	fmt.Println("user :%s  all equations %v", equation)
 }
 
-func handleMessage(message string, conn net.Conn, client_count *int) {
+func handleMessage(message string, conn net.Conn, client_count *int, equation *entity.Equation) {
 	fmt.Println("> " + message)
 
 	if len(message) > 0 {
@@ -91,15 +103,15 @@ func handleMessage(message string, conn net.Conn, client_count *int) {
 			} else {
 				*client_count++
 				clientaddress := conn.RemoteAddr().String()
-
+				equation.Equations = append(equation.Equations, entity.EquationObject{
+					Expresion: message,
+					Result:    result,
+					Timestamp: time.Now(),
+				})
 				log.Info("client " + clientaddress + " " + result)
 				conn.Write([]byte(result + "  Expression count " + strconv.Itoa(*client_count) + "\n"))
+				conn.Write([]byte("Enter Expression or type /quit to Exit : \n"))
 			}
 		}
 	}
-}
-func Start() error {
-	err := server()
-	return err
-
 }

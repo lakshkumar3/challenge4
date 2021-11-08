@@ -18,7 +18,6 @@ func Client() {
 	conn, err := net.Dial("tcp", dest)
 	if err != nil {
 		if _, t := err.(*net.OpError); t {
-			fmt.Println("Some problem connecting.")
 			log.Fatal("Some problem connecting.")
 		} else {
 			log.Fatal("Unknown error: " + err.Error())
@@ -45,11 +44,14 @@ func readConnection(conn net.Conn) {
 
 		for {
 			ok := scanner.Scan()
+			if !ok {
+				break
+			}
 			text := scanner.Text()
 
 			command := handleCommands(text)
 			if !command {
-				fmt.Println(" %s\n> ", text)
+				fmt.Println(text)
 			}
 
 			if !ok {
