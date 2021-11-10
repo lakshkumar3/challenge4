@@ -33,13 +33,14 @@ func main() {
 		log.Fatal("Could not parse configuration file  " + flagConfigPath + "/" + flagEnvironment + ":" + err.Error())
 		return
 	}
-	address := fmt.Sprint(flagEnvironment + "host:" + settings.GetString("REDIS_PORT"))
+	address := fmt.Sprint(settings.GetString("REDIS_HOST") + settings.GetString("REDIS_PORT"))
 	opts := &redis.Options{
 		Addr:     address,
-		Password: "",
-		DB:       0,
+		Password: settings.GetString("REDIS_HOST"),
+		DB:       settings.GetInt("DB_NUM"),
 	}
 	warehouse.AddConnection("redis", redis.ConnectRedis(opts))
+	log.Info("   • connecting to Redis    ")
 	err := server.StartServer()
 	if err != nil {
 		log.Error("server returing error " + err.Error())

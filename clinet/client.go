@@ -39,11 +39,8 @@ func readConnection(conn net.Conn) {
 	for {
 		scanner := bufio.NewScanner(conn)
 
-		for {
-			ok := scanner.Scan()
-			if !ok {
-				break
-			}
+		for scanner.Scan() {
+
 			text := scanner.Text()
 
 			command := handleCommands(text)
@@ -51,11 +48,9 @@ func readConnection(conn net.Conn) {
 				fmt.Println(text)
 			}
 
-			if !ok {
-				log.Info("Reached EOF on server connection.")
-				break
-			}
 		}
+		log.Info("Reached EOF on server connection.")
+
 	}
 }
 
@@ -66,7 +61,7 @@ func handleCommands(text string) bool {
 
 			switch {
 			case text == "%quit%":
-				log.Info("\b\bServer is leaving. Hanging up.")
+				log.Info("Server is leaving. Hanging up.")
 				os.Exit(0)
 			}
 			return true

@@ -27,12 +27,12 @@ func StartServer() error {
 		log.Fatal("could not listen to server " + err.Error())
 		return err
 	}
-	fmt.Printf("Listening on %s.\n", src)
+	log.Info(fmt.Sprintf("Listening on %s.\n", src))
 
 	go func() {
 		<-ch
 		log.Info("\n number of expression calculated by all clients" + fmt.Sprint(totalCount))
-		log.Info("server closing it calculated total " + fmt.Sprint(totalCount) + " Expressions across all clients")
+		log.Info(fmt.Sprintf("server closing it calculated total  %s Expressions across all clients", totalCount))
 		listener.Close()
 		os.Exit(1)
 	}()
@@ -54,36 +54,34 @@ func StartServer() error {
 }
 
 func handleConnection(conn net.Conn, total_count *int, name string) {
+	var user entity.User
+	user.SetName(name)
 	var client_count int = 0
 	remoteAddr := conn.RemoteAddr().String()
 	log.Info("Client connected from " + remoteAddr)
 	scanner := bufio.NewScanner(conn)
-	var equation entity.EquationCollection
 	conn.Write([]byte("\nEnter Expression or type /quit to Exit : \n"))
-	for {
-		ok := scanner.Scan()
+	for scanner.Scan() {
 
-		if !ok {
+		equation, err := handleMessage(scanner.Text(), conn, &client_count)
+		if err == nil {
+			err := service.User(user, equation)
+			if err != nil {
+				log.Error(err.Error())
+			}
+		} else if err.Error() == "quit" {
+			conn.Close()
 			break
+		} else {
+			log.Info("wrong message ")
 		}
-		handleMessage(scanner.Text(), conn, &client_count, &equation)
 	}
 	*total_count = *total_count + client_count
-	log.Info(remoteAddr + " " + name + " client calculate total " + fmt.Sprint(client_count) + " Expressions")
-	log.Info("Client  " + name + " disconnected.")
-	var user entity.User
-	user.SetName(name)
-	err := service.User(user, equation)
-	if err != nil {
-		log.Error("error at service" + err.Error())
-		return
-	}
-	log.Info(fmt.Sprintf("user :%s  all equations %v", user.Name(), equation))
+	log.Info("connection disconnected client " + name + " client calculated total " + fmt.Sprint(client_count) + " Expressions")
 }
 
-func handleMessage(message string, conn net.Conn, client_count *int, equation *entity.EquationCollection) {
+func handleMessage(message string, conn net.Conn, client_count *int) (entity.Equation, error) {
 	log.Info("> " + message)
-
 	if len(message) > 0 {
 		switch {
 		case message == "/quit":
@@ -92,7 +90,7 @@ func handleMessage(message string, conn net.Conn, client_count *int, equation *e
 			conn.Write([]byte("I'm shutting down now.\n"))
 			log.Info("< " + "%quit%")
 			conn.Write([]byte("%quit%\n"))
-			conn.Close()
+			return entity.Equation{}, fmt.Errorf("quit")
 
 		default:
 			result, err := calculator.CalculateExpression(message)
@@ -102,15 +100,17 @@ func handleMessage(message string, conn net.Conn, client_count *int, equation *e
 			} else {
 				*client_count++
 				clientaddress := conn.RemoteAddr().String()
-				equation.Equations = append(equation.Equations, entity.Equation{
+
+				log.Info("client " + clientaddress + " " + result)
+				conn.Write([]byte(fmt.Sprintf(result+"  Expression count %s \n", *client_count)))
+				conn.Write([]byte("Enter Expression or type /quit to Exit : \n"))
+				return entity.Equation{
 					Expresion: message,
 					Result:    result,
 					Timestamp: time.Now(),
-				})
-				log.Info("client " + clientaddress + " " + result)
-				conn.Write([]byte(result + "  Expression count " + fmt.Sprint(*client_count) + "\n"))
-				conn.Write([]byte("Enter Expression or type /quit to Exit : \n"))
+				}, nil
 			}
 		}
 	}
+	return entity.Equation{}, fmt.Errorf("wrong message")
 }

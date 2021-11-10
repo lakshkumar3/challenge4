@@ -18,16 +18,15 @@ func (u *User) SetName(name string) {
 	u.name = name
 }
 
-func SaveUser(user User, equation EquationCollection, db *redis.Redis) error {
-	for _, element := range equation.Equations {
-		equationJson, err := json.Marshal(element)
-		if err != nil {
-			return err
-		}
-		cmd := db.Client.SAdd(user.name, equationJson)
-		if cmd.Err() != nil {
-			log.Error("erorr while sadd details =" + cmd.Err().Error())
-		}
+func SaveUser(user User, equation Equation, db *redis.Redis) error {
+	equationJson, err := json.Marshal(equation)
+	if err != nil {
+		return err
+	}
+	cmd := db.Client.SAdd(user.name, equationJson)
+	if cmd.Err() != nil {
+		log.Error("erorr while sadd details =" + cmd.Err().Error())
+		return err
 	}
 	return nil
 }
