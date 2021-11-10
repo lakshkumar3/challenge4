@@ -27,10 +27,14 @@ func init() {
 
 func main() {
 	// parse the environment file
+	log.Log = log.WithFields(log.Fields{
+		"Path":     flagConfigPath,
+		"FileName": flagEnvironment,
+	})
 	settings.SetConfigName(flagEnvironment)
 	settings.AddConfigPath(flagConfigPath)
 	if err := settings.ReadInConfig(); err != nil {
-		log.Fatal("Could not parse configuration file  " + flagConfigPath + "/" + flagEnvironment + ":" + err.Error())
+		log.WithError(err).Error("Could not parse configuration file  ")
 		return
 	}
 	address := fmt.Sprint(settings.GetString("REDIS_HOST") + settings.GetString("REDIS_PORT"))
