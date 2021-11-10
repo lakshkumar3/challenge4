@@ -8,13 +8,10 @@ import (
 	"net"
 	"os"
 	"regexp"
-	"strconv"
 )
 
 func Client() {
-
-	dest := ":" + strconv.Itoa(settings.GetInt("LOCAL_PORT"))
-
+	dest := fmt.Sprintf(":" + settings.GetString("LOCAL_PORT"))
 	conn, err := net.Dial("tcp", dest)
 	if err != nil {
 		if _, t := err.(*net.OpError); t {
@@ -55,7 +52,7 @@ func readConnection(conn net.Conn) {
 			}
 
 			if !ok {
-				fmt.Println("Reached EOF on server connection.")
+				log.Info("Reached EOF on server connection.")
 				break
 			}
 		}

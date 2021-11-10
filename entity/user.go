@@ -2,6 +2,7 @@ package entity
 
 import (
 	"encoding/json"
+	"github.com/apex/log"
 	"github.com/cakemarketing/snowbank/stores/redis"
 )
 
@@ -17,34 +18,16 @@ func (u *User) SetName(name string) {
 	u.name = name
 }
 
-func (u User) Parse() ([]byte, error) {
-	userJson, err := json.Marshal(u)
-	if err != nil {
-		return nil, err
+func SaveUser(user User, equation EquationCollection, db *redis.Redis) error {
+	for _, element := range equation.Equations {
+		equationJson, err := json.Marshal(element)
+		if err != nil {
+			return err
+		}
+		cmd := db.Client.SAdd(user.name, equationJson)
+		if cmd.Err() != nil {
+			log.Error("erorr while sadd details =" + cmd.Err().Error())
+		}
 	}
-	return userJson, nil
-}
-func UserExists(user User, db *redis.Redis) bool {
-	_, err := db.Client.Get(user.name).Result()
-	if err != nil {
-		return false
-	}
-	return true
-}
-func GetUserEquations(user User, db *redis.Redis) (Equation, error) {
-	equationsJson, _ := db.Client.Get(user.name).Result()
-	var equations Equation
-	e, err := ParseFromJson(equationsJson, equations)
-	if err != nil {
-		return Equation{}, err
-	}
-	return e, nil
-}
-func SaveUser(user User, equation Equation, db *redis.Redis) error {
-	equationJson, err := equation.ParseToJson()
-	if err != nil {
-		return err
-	}
-	db.Client.Set(user.name, equationJson, 0)
 	return nil
 }

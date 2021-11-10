@@ -30,12 +30,12 @@ func main() {
 	settings.SetConfigName(flagEnvironment)
 	settings.AddConfigPath(flagConfigPath)
 	if err := settings.ReadInConfig(); err != nil {
-		fmt.Printf("Could not parse configuration file '%s/%s': %v", flagConfigPath, flagEnvironment, err)
 		log.Fatal("Could not parse configuration file  " + flagConfigPath + "/" + flagEnvironment + ":" + err.Error())
 		return
 	}
+	address := fmt.Sprint(flagEnvironment + "host:" + settings.GetString("REDIS_PORT"))
 	opts := &redis.Options{
-		Addr:     settings.GetString("REDIS_PORT"),
+		Addr:     address,
 		Password: "",
 		DB:       0,
 	}
