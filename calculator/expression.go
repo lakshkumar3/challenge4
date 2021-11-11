@@ -30,7 +30,7 @@ func HasHigherPrecedence(op1 string, op2 string) bool {
 }
 
 func ToPostfix(s string) string {
-	log.Info(" ToPostfix called")
+	log.Debug(" ToPostfix called")
 	var stack Stack
 	postfix := ""
 
@@ -85,7 +85,7 @@ func ToPostfix(s string) string {
 		str, _ := stack.Pop()
 		postfix += " " + str
 	}
-	log.Info(" ToPostfix completed")
+	log.Debug(" ToPostfix completed")
 
 	return strings.TrimSpace(postfix)
 }

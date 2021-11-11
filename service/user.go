@@ -15,7 +15,11 @@ func User(user entity.User, equation entity.Equation) error {
 		log.Fatal("redis parse error")
 	}
 
-	entity.SaveUser(user, equation, db)
-
+	err := entity.SaveUser(user, equation, db)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("sucessfullly updated on redis")
 	return nil
 }

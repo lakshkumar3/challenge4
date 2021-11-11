@@ -65,6 +65,8 @@ func handleConnection(conn net.Conn, total_count *int, name string) {
 
 		equation, err := handleMessage(scanner.Text(), conn, &client_count)
 		if err == nil {
+			msg := fmt.Sprintf("client expression   client=%s equation=%s result=%s", name, equation.Expresion, equation.Result)
+			log.Info(msg)
 			err := service.User(user, equation)
 			if err != nil {
 				log.Error(err.Error())
@@ -98,15 +100,16 @@ func handleMessage(message string, conn net.Conn, client_count *int) (entity.Equ
 				log.Error(err.Error())
 				conn.Write([]byte(err.Error() + "\n"))
 			} else {
+				strResult := fmt.Sprint(result)
 				*client_count++
 				clientaddress := conn.RemoteAddr().String()
 
-				log.Info("client " + clientaddress + " " + result)
-				conn.Write([]byte(fmt.Sprintf(result+"  Expression count %s \n", *client_count)))
+				log.Info("client " + clientaddress + " " + strResult)
+				conn.Write([]byte(fmt.Sprintf("expression=%s result=%s  Expression count %d \n", message, strResult, *client_count)))
 				conn.Write([]byte("Enter Expression or type /quit to Exit : \n"))
 				return entity.Equation{
 					Expresion: message,
-					Result:    result,
+					Result:    strResult,
 					Timestamp: time.Now(),
 				}, nil
 			}

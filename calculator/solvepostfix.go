@@ -9,7 +9,7 @@ import (
 )
 
 func SolvePostfix(postfixString string) (float64, error) {
-	log.Info(" SolvePostfix called")
+	log.Debug(" SolvePostfix called")
 	var stack FloatStack
 	a := ""
 	b := ""
