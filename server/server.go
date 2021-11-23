@@ -31,7 +31,7 @@ func StartServer() error {
 
 	go func() {
 		<-ch
-		log.Info("\n number of expression calculated by all clients" + fmt.Sprint(totalCount))
+		log.Info(" number of expression calculated by all clients" + fmt.Sprint(totalCount))
 		log.Info(fmt.Sprintf("server closing it calculated total  %s Expressions across all clients", totalCount))
 		listener.Close()
 		os.Exit(1)
@@ -67,7 +67,9 @@ func handleConnection(conn net.Conn, total_count *int, name string) {
 		if err == nil {
 			msg := fmt.Sprintf("client expression   client=%s equation=%s result=%s", name, equation.Expresion, equation.Result)
 			log.Info(msg)
-			err := service.User(user, equation)
+			userService := service.UserService{}
+
+			err := userService.SaveEquation(user, equation)
 			if err != nil {
 				log.Error(err.Error())
 			}

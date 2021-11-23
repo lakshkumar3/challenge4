@@ -3,19 +3,37 @@ package service
 import (
 	"challenge1/entity"
 	"github.com/apex/log"
-	"github.com/cakemarketing/snowbank/stores/redis"
-	"github.com/cakemarketing/snowbank/warehouse"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func User(user entity.User, equation entity.Equation) error {
-	opts := &warehouse.Options{}
-	redisinterface := warehouse.GetConnection("redis", opts)
-	db, ok := redisinterface.(*redis.Redis)
-	if !ok {
-		log.Fatal("redis parse error")
-	}
+var (
+	userService SaveService
+)
 
-	err := entity.SaveUser(user, equation, db)
+func init() {
+	userService = &UserService{}
+}
+
+type UserService struct {
+}
+type SaveService interface {
+	SaveCache() error
+	SaveEquation(user entity.User, equation entity.Equation) error
+}
+
+func (*UserService) SaveEquation(user entity.User, equation entity.Equation) error {
+
+	err := equation.SaveEquation(user)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("sucessfullly updated on redis")
+	return nil
+}
+func (*UserService) SaveCache() error {
+	var cache entity.Cache
+	err := cache.SaveEquationCache()
 	if err != nil {
 		log.Error(err.Error())
 		return err
