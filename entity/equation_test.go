@@ -2,40 +2,41 @@ package entity
 
 import (
 	"fmt"
+	redis2 "github.com/go-redis/redis"
 	"testing"
+	"time"
 )
-
-var (
-	SaveEquationfunc func(user User) error
-)
-
-type EquationEntityMock struct{}
-
-func (e EquationEntityMock) SaveEquation(user User) error {
-	return SaveEquationfunc(user)
-}
 
 func TestEquation_SaveEquation(t *testing.T) {
-	equationEntity := &EquationEntityMock{}
-	SaveEquationfunc = func(user User) error {
-		return nil
+	redisdb := &MockRedis{}
+	equation := Equation{
+		Expresion: "1+2",
+		Result:    "3",
+		Timestamp: time.Now(),
 	}
+	SAddfunc = func(key string, members ...interface{}) *redis2.IntCmd {
+		return redis2.NewIntResult(1, nil)
+	}
+
 	user := User{}
 	user.SetName("laksh")
-	err := equationEntity.SaveEquation(user)
+	err := equation.SaveEquation(user, redisdb)
 	if err != nil {
 		t.Fail()
 	}
 
 }
 func TestNegativeEquation_SaveEquation(t *testing.T) {
-	equationEntity := &EquationEntityMock{}
-	SaveEquationfunc = func(user User) error {
-		return fmt.Errorf("error 404")
+
+	redisdb := &MockRedis{}
+	equation := Equation{}
+	SAddfunc = func(key string, members ...interface{}) *redis2.IntCmd {
+		return redis2.NewIntResult(1, fmt.Errorf("mock sadd erorr"))
 	}
+
 	user := User{}
 	user.SetName("laksh")
-	err := equationEntity.SaveEquation(user)
+	err := equation.SaveEquation(user, redisdb)
 	if err == nil {
 		t.Fail()
 	}

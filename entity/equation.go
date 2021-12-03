@@ -4,7 +4,6 @@ import (
 	"challenge1/db"
 	"encoding/json"
 	"github.com/apex/log"
-	"github.com/cakemarketing/snowbank/warehouse"
 	"time"
 )
 
@@ -21,27 +20,19 @@ func init() {
 }
 
 type Saver interface {
-	SaveEquation(user User) error
+	SaveEquation(user User, redisdb db.EquationAdder) error
 }
 
-func (equation *Equation) SaveEquation(user User) error {
-	opts := &warehouse.Options{}
-	redisinterface := warehouse.GetConnection("redis", opts)
-	redisdb, ok := redisinterface.(*db.RedisCache)
-	if !ok {
-		log.Fatal("redis parse error")
-	}
+func (equation *Equation) SaveEquation(user User, redisdb db.EquationAdder) error {
+
 	equationJson, err := json.Marshal(equation)
 	if err != nil {
 		return err
 	}
-	redisdb.MU.Lock()
-	cmd := redisdb.Client.SAdd(user.name, equationJson)
-	if cmd.Err() != nil {
-		log.Error("erorr while sadd details =" + cmd.Err().Error())
-		redisdb.MU.Unlock()
+	_, err = redisdb.SAdd(user.name, equationJson).Result()
+	if err != nil {
+		log.Error("erorr while sadd details =" + err.Error())
 		return err
 	}
-	redisdb.MU.Unlock()
 	return nil
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/cakemarketing/snowbank/stores"
@@ -13,6 +14,14 @@ type Mysql struct {
 	mu *sync.RWMutex
 }
 
+type EquationSaver interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+func (db *Mysql) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return db.DB.Exec(query, args...)
+
+}
 func Connect(host, port, database, user, password string) (*Mysql, error) {
 	url := fmt.Sprintf("%s:%s", host, port)
 	conn, err := aurora.NewConnection(url, user, password, database, 1000)
